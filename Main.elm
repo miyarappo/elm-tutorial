@@ -1,76 +1,72 @@
 module Main exposing (..)
 
-import Html exposing (Html, program)
-import Widget
+import Html exposing (Html, div, program, text)
+import Keyboard
+import Mouse
 
 
--- MODEL
+-- model
 
 
-type alias AppModel =
-    { widgetModel : Widget.Model
-    }
+type alias Model =
+    Int
 
 
-initialModel : AppModel
-initialModel =
-    { widgetModel = Widget.initialModel
-    }
-
-
-init : ( AppModel, Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( 0, Cmd.none )
 
 
 
--- MESSAGE
+-- message
 
 
 type Msg
-    = WidgetMsg Widget.Msg
+    = MouseMsg Mouse.Position
+    | KeyMsg Keyboard.KeyCode
 
 
 
--- VIEW
+-- view
 
 
-view : AppModel -> Html Msg
+view : Model -> Html Msg
 view model =
-    Html.div []
-        [ Html.map WidgetMsg (Widget.view model.widgetModel)
+    div []
+        [ text (toString model) ]
+
+
+
+-- update
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        MouseMsg position ->
+            ( model + 1, Cmd.none )
+
+        KeyMsg code ->
+            ( model + 2, Cmd.none )
+
+
+
+-- subscription
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Mouse.clicks MouseMsg
+        , Keyboard.downs KeyMsg
         ]
 
 
 
--- UPDATE
+-- main
 
 
-update : Msg -> AppModel -> ( AppModel, Cmd Msg )
-update message model =
-    case message of
-        WidgetMsg subMsg ->
-            let
-                ( updateWidgetModel, widgetCmd ) =
-                    Widget.update subMsg model.widgetModel
-            in
-            ( { model | widgetModel = updateWidgetModel }, Cmd.map WidgetMsg widgetCmd )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : AppModel -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-
--- APP
-
-
-main : Program Never AppModel Msg
+main : Program Never Model Msg
 main =
     program
         { init = init
